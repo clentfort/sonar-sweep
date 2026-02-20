@@ -1,0 +1,89 @@
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import yargs from 'yargs/yargs'
+
+import { builder, handler } from './pr-issues.js'
+
+const { getPullRequestIssuesMock } = vi.hoisted(() => ({
+  getPullRequestIssuesMock: vi.fn(),
+}))
+
+vi.mock('../../service/pr-issues.js', () => ({
+  getPullRequestIssues: getPullRequestIssuesMock,
+}))
+
+describe('pr-issues command', () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('builds command options', () => {
+    const result = builder(yargs([]))
+    expect(result).toBeDefined()
+  })
+
+  it('prints issue list output', async () => {
+    const stdout = vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
+    getPullRequestIssuesMock.mockResolvedValue({
+      projectKey: 'project',
+      pullRequest: '42',
+      total: 1,
+      page: 1,
+      pageSize: 100,
+      analysisUrl: 'https://sonar/dashboard?id=project&pullRequest=42',
+      issues: [
+        {
+          key: 'AZ-1',
+          type: 'CODE_SMELL',
+          severity: 'MINOR',
+          status: 'OPEN',
+          issueStatus: 'OPEN',
+          rule: 'ts:S1',
+          message: 'Fix this.',
+          file: 'src/app.ts',
+          line: 10,
+          effort: '1min',
+        },
+      ],
+    })
+
+    await handler({
+      token: 'token',
+      baseUrl: 'https://sonar',
+      projectKey: 'project',
+      pullRequest: '42',
+      page: 1,
+      pageSize: 100,
+      json: false,
+    })
+
+    const output = stdout.mock.calls.map((call) => call[0]).join('')
+    expect(output).toContain('Found 1 open issue(s)')
+    expect(output).toContain('src/app.ts:10')
+  })
+
+  it('prints JSON when requested', async () => {
+    const stdout = vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
+    getPullRequestIssuesMock.mockResolvedValue({
+      projectKey: 'project',
+      pullRequest: '42',
+      total: 0,
+      page: 1,
+      pageSize: 100,
+      analysisUrl: 'https://sonar/dashboard?id=project&pullRequest=42',
+      issues: [],
+    })
+
+    await handler({
+      token: 'token',
+      baseUrl: 'https://sonar',
+      projectKey: 'project',
+      pullRequest: '42',
+      page: 1,
+      pageSize: 100,
+      json: true,
+    })
+
+    expect(stdout).toHaveBeenCalledTimes(1)
+    expect(String(stdout.mock.calls[0]?.[0])).toContain('"issues": []')
+  })
+})
