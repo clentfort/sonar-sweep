@@ -2,33 +2,44 @@
   "name": "sonar-sweep",
   "version": "0.2.0",
   "description": "CLI for fetching SonarQube Cloud pull request details",
-  "type": "module",
   "bin": {
-    "sonar-sweep": "dist/cli.js"
+    "sonar-sweep": "dist/cli.mjs"
   },
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
   "files": [
     "dist",
     "README.md"
   ],
-  "engines": {
-    "node": ">=20"
-  },
+  "type": "module",
+  "main": "dist/index.mjs",
+  "types": "dist/index.d.mts",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsdown src/index.ts src/cli.ts src/cli/index.ts --format esm --dts",
     "test": "vitest run",
-    "test:e2e": "npm run build && vitest run --config vitest.e2e.config.ts",
-    "type-check": "tsc -p tsconfig.json --noEmit",
-    "start": "node dist/cli.js"
+    "test:e2e": "run-s build \"test:e2e:run {@}\" --",
+    "test:e2e:run": "vitest run --config vitest.e2e.config.ts",
+    "type-check": "tsgo --noEmit",
+    "lint": "oxlint .",
+    "format": "oxfmt --write .",
+    "start": "node dist/cli.mjs",
+    "prepare": "husky"
   },
   "dependencies": {
     "yargs": "17.7.2"
   },
   "devDependencies": {
+    "@nkzw/oxlint-config": "^1.0.1",
     "@types/node": "22.13.10",
     "@types/yargs": "17.0.33",
+    "@typescript/native-preview": "^7.0.0-dev.20260225.1",
+    "husky": "^9.1.7",
+    "npm-run-all2": "^8.0.4",
+    "oxfmt": "^0.35.0",
+    "oxlint": "^1.50.0",
+    "tsdown": "^0.20.3",
     "typescript": "5.8.2",
     "vitest": "4.0.15"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

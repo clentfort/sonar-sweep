@@ -1,25 +1,25 @@
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi } from "vitest";
 
-import { getPullRequestReport } from './pr-report.js'
+import { getPullRequestReport } from "./pr-report.js";
 
-describe('getPullRequestReport', () => {
-  it('aggregates status, issues, and measures', async () => {
+describe("getPullRequestReport", () => {
+  it("aggregates status, issues, and measures", async () => {
     const fetchMock = vi
       .fn<typeof fetch>()
       .mockResolvedValueOnce(
         new Response(
           JSON.stringify({
             projectStatus: {
-              status: 'OK',
               conditions: [
                 {
-                  status: 'OK',
-                  metricKey: 'new_coverage',
-                  comparator: 'LT',
-                  errorThreshold: '80',
-                  actualValue: '82.5',
+                  actualValue: "82.5",
+                  comparator: "LT",
+                  errorThreshold: "80",
+                  metricKey: "new_coverage",
+                  status: "OK",
                 },
               ],
+              status: "OK",
             },
           }),
         ),
@@ -27,17 +27,17 @@ describe('getPullRequestReport', () => {
       .mockResolvedValueOnce(
         new Response(
           JSON.stringify({
-            total: 4,
             facets: [
               {
-                property: 'issueStatuses',
+                property: "issueStatuses",
                 values: [
-                  { val: 'OPEN', count: 2 },
-                  { val: 'CONFIRMED', count: 1 },
-                  { val: 'ACCEPTED', count: 1 },
+                  { count: 2, val: "OPEN" },
+                  { count: 1, val: "CONFIRMED" },
+                  { count: 1, val: "ACCEPTED" },
                 ],
               },
             ],
+            total: 4,
           }),
         ),
       )
@@ -46,78 +46,78 @@ describe('getPullRequestReport', () => {
           JSON.stringify({
             component: {
               measures: [
-                { metric: 'new_security_hotspots', periods: [{ index: 1, value: '3' }] },
-                { metric: 'new_coverage', periods: [{ index: 1, value: '82.5' }] },
-                { metric: 'new_duplicated_lines_density', periods: [{ index: 1, value: '1.2' }] },
+                { metric: "new_security_hotspots", periods: [{ index: 1, value: "3" }] },
+                { metric: "new_coverage", periods: [{ index: 1, value: "82.5" }] },
+                { metric: "new_duplicated_lines_density", periods: [{ index: 1, value: "1.2" }] },
               ],
             },
           }),
         ),
-      )
+      );
 
     const report = await getPullRequestReport(
       {
-        token: 'token',
-        baseUrl: 'https://sonarcloud.io',
+        baseUrl: "https://sonarcloud.io",
         fetchImpl: fetchMock,
+        token: "token",
       },
       {
-        projectKey: 'my_project',
-        pullRequest: '123',
+        projectKey: "my_project",
+        pullRequest: "123",
       },
-    )
+    );
 
-    expect(fetchMock).toHaveBeenCalledTimes(3)
+    expect(fetchMock).toHaveBeenCalledTimes(3);
     expect(report).toEqual({
-      projectKey: 'my_project',
-      pullRequest: '123',
-      qualityGateStatus: 'OK',
+      analysisUrl: "https://sonarcloud.io/dashboard?id=my_project&pullRequest=123",
       failingQualityGateConditions: [],
-      analysisUrl: 'https://sonarcloud.io/dashboard?id=my_project&pullRequest=123',
       issueCounts: {
-        newIssues: 3,
         acceptedIssues: 1,
+        newIssues: 3,
       },
       measures: {
-        securityHotspots: 3,
         coverageOnNewCode: 82.5,
         duplicationOnNewCode: 1.2,
+        securityHotspots: 3,
       },
-    })
-  })
+      projectKey: "my_project",
+      pullRequest: "123",
+      qualityGateStatus: "OK",
+    });
+  });
 
-  it('fails when project key is missing', async () => {
+  it("fails when project key is missing", async () => {
     await expect(
       getPullRequestReport(
         {
-          token: 'token',
           fetchImpl: vi.fn(),
+          token: "token",
         },
         {
-          projectKey: ' ',
-          pullRequest: '123',
+          projectKey: " ",
+          pullRequest: "123",
         },
       ),
-    ).rejects.toThrow('Missing projectKey')
-  })
+    ).rejects.toThrow("Missing projectKey");
+  });
 
-  it('exposes failing quality gate conditions', async () => {
+  it("exposes failing quality gate conditions", async () => {
     const fetchMock = vi
       .fn<typeof fetch>()
       .mockResolvedValueOnce(
         new Response(
           JSON.stringify({
             projectStatus: {
-              status: 'ERROR',
               conditions: [
                 {
-                  status: 'ERROR',
-                  metricKey: 'new_coverage',
-                  comparator: 'LT',
-                  errorThreshold: '80',
-                  actualValue: '60.3',
+                  actualValue: "60.3",
+                  comparator: "LT",
+                  errorThreshold: "80",
+                  metricKey: "new_coverage",
+                  status: "ERROR",
                 },
               ],
+              status: "ERROR",
             },
           }),
         ),
@@ -125,8 +125,8 @@ describe('getPullRequestReport', () => {
       .mockResolvedValueOnce(
         new Response(
           JSON.stringify({
+            facets: [{ property: "issueStatuses", values: [] }],
             total: 0,
-            facets: [{ property: 'issueStatuses', values: [] }],
           }),
         ),
       )
@@ -138,26 +138,26 @@ describe('getPullRequestReport', () => {
             },
           }),
         ),
-      )
+      );
 
     const report = await getPullRequestReport(
       {
-        token: 'token',
         fetchImpl: fetchMock,
+        token: "token",
       },
       {
-        projectKey: 'my_project',
-        pullRequest: '123',
+        projectKey: "my_project",
+        pullRequest: "123",
       },
-    )
+    );
 
     expect(report.failingQualityGateConditions).toEqual([
       {
-        metricKey: 'new_coverage',
-        comparator: 'LT',
-        errorThreshold: '80',
-        actualValue: '60.3',
+        actualValue: "60.3",
+        comparator: "LT",
+        errorThreshold: "80",
+        metricKey: "new_coverage",
       },
-    ])
-  })
-})
+    ]);
+  });
+});

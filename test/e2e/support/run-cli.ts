@@ -1,4 +1,4 @@
-export async function runCli(argv: string[]): Promise<void> {
-  const { run } = await import('../../../dist/cli/index.js')
-  await run(['node', 'cli', ...argv])
+export async function runCli(argv: Array<string>): Promise<void> {
+  const { run } = await import("../../../dist/cli/index.mjs");
+  await run(["node", "cli", ...argv]);
 }

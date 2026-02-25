@@ -6,11 +6,13 @@ description: Inspect and triage SonarQube Cloud pull request findings
 # sonar-sweep-cli
 
 ## Purpose
+
 Use this skill when a user wants to inspect SonarQube Cloud PR status, review
 issues with code context, identify low-coverage files, and optionally accept
 issues after review.
 
 ## When to use
+
 - User asks to check Sonar status for a PR.
 - User asks why a quality gate failed.
 - User asks for issue details (rule, file, line, message).
@@ -30,6 +32,7 @@ npx sonar-sweep pr-review <pullRequest> --context 3
 ```
 
 Notes:
+
 - `pr-*` commands auto-detect `sonar.projectKey` from `sonar-project.properties`
   in the current git root.
 - Override auto-detection with `--projectKey` when needed.
@@ -57,6 +60,7 @@ npx sonar-sweep issue-accept <issueKeyB> --comment "Reviewed and accepted"
 ```
 
 ## Suggested assistant behavior
+
 1. Start with `pr-report` to determine gate state and failing conditions.
 2. If gate fails on coverage, run `pr-coverage` before proposing test work.
 3. If issues exist, run `pr-review` to inspect snippets and issue URLs.
@@ -66,16 +70,19 @@ npx sonar-sweep issue-accept <issueKeyB> --comment "Reviewed and accepted"
 6. Re-run `pr-report` and/or `pr-issues` after changes to confirm outcome.
 
 ## Safety
+
 - `issue-accept` changes Sonar state. Never run it without explicit user intent.
 - Avoid any non-read Sonar actions unless the user asked for them.
 
 ## Troubleshooting checklist
+
 - Missing token: ensure `SONAR_TOKEN` is set or pass `--token`.
 - Wrong project detected: pass `--projectKey` explicitly.
 - No project auto-detection: verify `sonar-project.properties` exists at git root.
 - No open issues but gate fails: inspect `pr-report` conditions and `pr-coverage`.
 
 ## Expected output style
+
 - Execute requested checks instead of only suggesting commands.
 - Return concise triage output: gate status, issue count, coverage hotspots.
 - When mutating issue state, confirm which issue keys were transitioned.

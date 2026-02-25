@@ -1,42 +1,42 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
-import yargs from 'yargs/yargs'
+import { afterEach, describe, expect, it, vi } from "vitest";
+import yargs from "yargs/yargs";
 
-import { builder, handler } from './issue-accept.js'
+import { builder, handler } from "./issue-accept.js";
 
 const { transitionIssueMock } = vi.hoisted(() => ({
   transitionIssueMock: vi.fn(),
-}))
+}));
 
-vi.mock('../../service/issue-transition.js', () => ({
+vi.mock("../../service/issue-transition.js", () => ({
   transitionIssue: transitionIssueMock,
-}))
+}));
 
-describe('issue-accept command', () => {
+describe("issue-accept command", () => {
   afterEach(() => {
-    vi.restoreAllMocks()
-  })
+    vi.restoreAllMocks();
+  });
 
-  it('builds command options', () => {
-    expect(builder(yargs([]))).toBeDefined()
-  })
+  it("builds command options", () => {
+    expect(builder(yargs([]))).toBeDefined();
+  });
 
-  it('prints success output', async () => {
-    const stdout = vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
+  it("prints success output", async () => {
+    const stdout = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
     transitionIssueMock.mockResolvedValue({
-      issueKey: 'AZ-1',
-      transition: 'accept',
       applied: true,
-    })
+      issueKey: "AZ-1",
+      transition: "accept",
+    });
 
     await handler({
-      token: 'token',
-      baseUrl: 'https://sonar',
-      issueKey: 'AZ-1',
-      comment: 'accepted',
+      baseUrl: "https://sonar",
+      comment: "accepted",
+      issueKey: "AZ-1",
       json: false,
-    })
+      token: "token",
+    });
 
-    const output = stdout.mock.calls.map((call) => call[0]).join('')
-    expect(output).toContain('Accepted issue AZ-1')
-  })
-})
+    const output = stdout.mock.calls.map((call) => call[0]).join("");
+    expect(output).toContain("Accepted issue AZ-1");
+  });
+});
