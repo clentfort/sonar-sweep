@@ -58,6 +58,33 @@ export type SonarIssueComponent = {
   longName?: string
 }
 
+export type SonarHotspot = {
+  key: string
+  component: string
+  project: string
+  securityCategory: string
+  vulnerabilityProbability: string
+  status: string
+  resolution?: string
+  line?: number
+  message: string
+  author?: string
+  creationDate?: string
+  updateDate?: string
+}
+
+export type HotspotsSearchResponse = {
+  paging: {
+    pageIndex: number
+    pageSize: number
+    total: number
+  }
+  hotspots: SonarHotspot[]
+  components?: SonarIssueComponent[]
+}
+
+export type HotspotResolution = 'SAFE' | 'ACKNOWLEDGED' | 'FIXED'
+
 export type MeasuresResponse = {
   component: {
     measures: Array<{
@@ -188,6 +215,36 @@ export class SonarCloudClient {
     await this.post('/api/issues/do_transition', {
       issue: issueKey,
       transition,
+      ...(comment ? { comment } : {}),
+    })
+  }
+
+  async getHotspots(
+    projectKey: string,
+    pullRequest: string,
+    status: 'TO_REVIEW' | 'REVIEWED' = 'TO_REVIEW',
+    page = 1,
+    pageSize = 100,
+  ): Promise<HotspotsSearchResponse> {
+    return this.get('/api/hotspots/search', {
+      projectKey,
+      pullRequest,
+      status,
+      p: String(page),
+      ps: String(pageSize),
+    })
+  }
+
+  async changeHotspotStatus(
+    hotspotKey: string,
+    status: 'REVIEWED' | 'TO_REVIEW',
+    resolution?: HotspotResolution,
+    comment?: string,
+  ): Promise<void> {
+    await this.post('/api/hotspots/change_status', {
+      hotspot: hotspotKey,
+      status,
+      ...(resolution ? { resolution } : {}),
       ...(comment ? { comment } : {}),
     })
   }
