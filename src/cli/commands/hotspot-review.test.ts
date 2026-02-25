@@ -1,109 +1,109 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
-import yargs from 'yargs/yargs'
+import { afterEach, describe, expect, it, vi } from "vitest";
+import yargs from "yargs/yargs";
 
-import { builder, handler } from './hotspot-review.js'
+import { builder, handler } from "./hotspot-review.js";
 
 const { reviewHotspotMock } = vi.hoisted(() => ({
   reviewHotspotMock: vi.fn(),
-}))
+}));
 
-vi.mock('../../service/hotspot-transition.js', () => ({
+vi.mock("../../service/hotspot-transition.js", () => ({
   reviewHotspot: reviewHotspotMock,
-}))
+}));
 
-describe('hotspot-review command', () => {
+describe("hotspot-review command", () => {
   afterEach(() => {
-    vi.restoreAllMocks()
-  })
+    vi.restoreAllMocks();
+  });
 
-  it('builds command options', () => {
-    expect(builder(yargs([]))).toBeDefined()
-  })
+  it("builds command options", () => {
+    expect(builder(yargs([]))).toBeDefined();
+  });
 
-  it('prints success output for SAFE resolution', async () => {
-    const stdout = vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
+  it("prints success output for SAFE resolution", async () => {
+    const stdout = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
     reviewHotspotMock.mockResolvedValue({
-      hotspotKey: 'AZ-HOTSPOT-1',
-      status: 'REVIEWED',
-      resolution: 'SAFE',
       applied: true,
-    })
+      hotspotKey: "AZ-HOTSPOT-1",
+      resolution: "SAFE",
+      status: "REVIEWED",
+    });
 
     await handler({
-      token: 'token',
-      baseUrl: 'https://sonarcloud.io',
-      hotspotKey: 'AZ-HOTSPOT-1',
-      resolution: 'SAFE',
-      comment: 'Not a risk',
+      baseUrl: "https://sonarcloud.io",
+      comment: "Not a risk",
+      hotspotKey: "AZ-HOTSPOT-1",
       json: false,
-    })
+      resolution: "SAFE",
+      token: "token",
+    });
 
-    const output = stdout.mock.calls.map((call) => call[0]).join('')
-    expect(output).toContain('Reviewed hotspot AZ-HOTSPOT-1 as SAFE')
-  })
+    const output = stdout.mock.calls.map((call) => call[0]).join("");
+    expect(output).toContain("Reviewed hotspot AZ-HOTSPOT-1 as SAFE");
+  });
 
-  it('prints success output for ACKNOWLEDGED resolution', async () => {
-    const stdout = vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
+  it("prints success output for ACKNOWLEDGED resolution", async () => {
+    const stdout = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
     reviewHotspotMock.mockResolvedValue({
-      hotspotKey: 'AZ-HOTSPOT-2',
-      status: 'REVIEWED',
-      resolution: 'ACKNOWLEDGED',
       applied: true,
-    })
+      hotspotKey: "AZ-HOTSPOT-2",
+      resolution: "ACKNOWLEDGED",
+      status: "REVIEWED",
+    });
 
     await handler({
-      token: 'token',
-      baseUrl: 'https://sonarcloud.io',
-      hotspotKey: 'AZ-HOTSPOT-2',
-      resolution: 'ACKNOWLEDGED',
+      baseUrl: "https://sonarcloud.io",
+      hotspotKey: "AZ-HOTSPOT-2",
       json: false,
-    })
+      resolution: "ACKNOWLEDGED",
+      token: "token",
+    });
 
-    const output = stdout.mock.calls.map((call) => call[0]).join('')
-    expect(output).toContain('Reviewed hotspot AZ-HOTSPOT-2 as ACKNOWLEDGED')
-  })
+    const output = stdout.mock.calls.map((call) => call[0]).join("");
+    expect(output).toContain("Reviewed hotspot AZ-HOTSPOT-2 as ACKNOWLEDGED");
+  });
 
-  it('prints success output for FIXED resolution', async () => {
-    const stdout = vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
+  it("prints success output for FIXED resolution", async () => {
+    const stdout = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
     reviewHotspotMock.mockResolvedValue({
-      hotspotKey: 'AZ-HOTSPOT-3',
-      status: 'REVIEWED',
-      resolution: 'FIXED',
       applied: true,
-    })
+      hotspotKey: "AZ-HOTSPOT-3",
+      resolution: "FIXED",
+      status: "REVIEWED",
+    });
 
     await handler({
-      token: 'token',
-      baseUrl: 'https://sonarcloud.io',
-      hotspotKey: 'AZ-HOTSPOT-3',
-      resolution: 'FIXED',
-      comment: 'Fixed in this PR',
+      baseUrl: "https://sonarcloud.io",
+      comment: "Fixed in this PR",
+      hotspotKey: "AZ-HOTSPOT-3",
       json: false,
-    })
+      resolution: "FIXED",
+      token: "token",
+    });
 
-    const output = stdout.mock.calls.map((call) => call[0]).join('')
-    expect(output).toContain('Reviewed hotspot AZ-HOTSPOT-3 as FIXED')
-  })
+    const output = stdout.mock.calls.map((call) => call[0]).join("");
+    expect(output).toContain("Reviewed hotspot AZ-HOTSPOT-3 as FIXED");
+  });
 
-  it('prints JSON output when --json flag is set', async () => {
-    const stdout = vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
+  it("prints JSON output when --json flag is set", async () => {
+    const stdout = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
     const mockResult = {
-      hotspotKey: 'AZ-HOTSPOT-1',
-      status: 'REVIEWED',
-      resolution: 'SAFE',
       applied: true,
-    }
-    reviewHotspotMock.mockResolvedValue(mockResult)
+      hotspotKey: "AZ-HOTSPOT-1",
+      resolution: "SAFE",
+      status: "REVIEWED",
+    };
+    reviewHotspotMock.mockResolvedValue(mockResult);
 
     await handler({
-      token: 'token',
-      baseUrl: 'https://sonarcloud.io',
-      hotspotKey: 'AZ-HOTSPOT-1',
-      resolution: 'SAFE',
+      baseUrl: "https://sonarcloud.io",
+      hotspotKey: "AZ-HOTSPOT-1",
       json: true,
-    })
+      resolution: "SAFE",
+      token: "token",
+    });
 
-    const output = stdout.mock.calls.map((call) => call[0]).join('')
-    expect(JSON.parse(output)).toEqual(mockResult)
-  })
-})
+    const output = stdout.mock.calls.map((call) => call[0]).join("");
+    expect(JSON.parse(output)).toEqual(mockResult);
+  });
+});

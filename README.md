@@ -33,7 +33,7 @@ sonar-sweep pr-report <projectKey> <pullRequest> --token <token>
 Or set environment variables:
 
 ```bash
-SONAR_TOKEN=... 
+SONAR_TOKEN=...
 SONAR_BASE_URL=https://sonarcloud.io
 ```
 

@@ -1,75 +1,75 @@
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi } from "vitest";
 
-import { getPullRequestIssues } from './pr-issues.js'
+import { getPullRequestIssues } from "./pr-issues.js";
 
-describe('getPullRequestIssues', () => {
-  it('maps Sonar issues into a stable report shape', async () => {
+describe("getPullRequestIssues", () => {
+  it("maps Sonar issues into a stable report shape", async () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
       new Response(
         JSON.stringify({
-          total: 1,
-          paging: { pageIndex: 1, pageSize: 50, total: 1 },
-          issues: [
-            {
-              key: 'AZ-1',
-              rule: 'ts:S1234',
-              severity: 'MAJOR',
-              component: 'my_project:src/app.ts',
-              line: 42,
-              status: 'OPEN',
-              issueStatus: 'OPEN',
-              message: 'Fix this.',
-              type: 'CODE_SMELL',
-              effort: '5min',
-            },
-          ],
           components: [
             {
-              key: 'my_project:src/app.ts',
-              path: 'src/app.ts',
+              key: "my_project:src/app.ts",
+              path: "src/app.ts",
             },
           ],
           facets: [],
+          issues: [
+            {
+              component: "my_project:src/app.ts",
+              effort: "5min",
+              issueStatus: "OPEN",
+              key: "AZ-1",
+              line: 42,
+              message: "Fix this.",
+              rule: "ts:S1234",
+              severity: "MAJOR",
+              status: "OPEN",
+              type: "CODE_SMELL",
+            },
+          ],
+          paging: { pageIndex: 1, pageSize: 50, total: 1 },
+          total: 1,
         }),
       ),
-    )
+    );
 
     const report = await getPullRequestIssues(
       {
-        token: 'token',
-        baseUrl: 'https://sonarcloud.io',
+        baseUrl: "https://sonarcloud.io",
         fetchImpl: fetchMock,
+        token: "token",
       },
       {
-        projectKey: 'my_project',
-        pullRequest: '123',
         page: 1,
         pageSize: 50,
+        projectKey: "my_project",
+        pullRequest: "123",
       },
-    )
+    );
 
-    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(report).toEqual({
-      projectKey: 'my_project',
-      pullRequest: '123',
-      total: 1,
-      page: 1,
-      pageSize: 50,
-      analysisUrl: 'https://sonarcloud.io/dashboard?id=my_project&pullRequest=123',
+      analysisUrl: "https://sonarcloud.io/dashboard?id=my_project&pullRequest=123",
       issues: [
         {
-          key: 'AZ-1',
-          type: 'CODE_SMELL',
-          severity: 'MAJOR',
-          status: 'OPEN',
-          issueStatus: 'OPEN',
-          rule: 'ts:S1234',
-          message: 'Fix this.',
-          file: 'src/app.ts',
+          effort: "5min",
+          file: "src/app.ts",
+          issueStatus: "OPEN",
+          key: "AZ-1",
           line: 42,
-          effort: '5min',
+          message: "Fix this.",
+          rule: "ts:S1234",
+          severity: "MAJOR",
+          status: "OPEN",
+          type: "CODE_SMELL",
         },
       ],
-    })
-  })
-})
+      page: 1,
+      pageSize: 50,
+      projectKey: "my_project",
+      pullRequest: "123",
+      total: 1,
+    });
+  });
+});

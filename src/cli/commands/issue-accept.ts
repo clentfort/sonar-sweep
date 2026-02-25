@@ -1,66 +1,66 @@
-import type { Argv } from 'yargs'
+import type { Argv } from "yargs";
 
-import { transitionIssue } from '../../service/issue-transition.js'
+import { transitionIssue } from "../../service/issue-transition.js";
 
 type IssueAcceptArgs = {
-  token: string
-  baseUrl: string
-  issueKey: string
-  comment?: string
-  json: boolean
-}
+  baseUrl: string;
+  comment?: string;
+  issueKey: string;
+  json: boolean;
+  token: string;
+};
 
-export const command = 'issue-accept <issueKey>'
-export const describe = 'Mark a Sonar issue as accepted (transition=accept)'
+export const command = "issue-accept <issueKey>";
+export const describe = "Mark a Sonar issue as accepted (transition=accept)";
 
 export function builder(yargs: Argv): Argv<IssueAcceptArgs> {
   return yargs
-    .positional('issueKey', {
-      type: 'string',
-      demandOption: 'Provide an issue key',
+    .positional("issueKey", {
       coerce: (value: unknown) => String(value).trim(),
+      demandOption: "Provide an issue key",
+      type: "string",
     })
-    .option('token', {
-      type: 'string',
+    .option("token", {
       default: process.env.SONAR_TOKEN,
-      defaultDescription: 'SONAR_TOKEN',
-      demandOption: 'Provide --token or set SONAR_TOKEN',
+      defaultDescription: "SONAR_TOKEN",
+      demandOption: "Provide --token or set SONAR_TOKEN",
+      type: "string",
     })
-    .option('baseUrl', {
-      alias: ['base-url', 'url'],
-      type: 'string',
-      default: process.env.SONAR_BASE_URL ?? 'https://sonarcloud.io',
-      defaultDescription: 'SONAR_BASE_URL or https://sonarcloud.io',
-      coerce: (value: unknown) => String(value).replace(/\/$/, ''),
+    .option("baseUrl", {
+      alias: ["base-url", "url"],
+      coerce: (value: unknown) => String(value).replace(/\/$/, ""),
+      default: process.env.SONAR_BASE_URL ?? "https://sonarcloud.io",
+      defaultDescription: "SONAR_BASE_URL or https://sonarcloud.io",
+      type: "string",
     })
-    .option('comment', {
-      type: 'string',
-      describe: 'Optional acceptance comment',
+    .option("comment", {
+      describe: "Optional acceptance comment",
+      type: "string",
     })
-    .option('json', {
-      type: 'boolean',
+    .option("json", {
       default: false,
-      describe: 'Print raw JSON for automation/agents',
-    })
+      describe: "Print raw JSON for automation/agents",
+      type: "boolean",
+    });
 }
 
 export async function handler(args: IssueAcceptArgs): Promise<void> {
   const result = await transitionIssue(
     {
-      token: args.token,
       baseUrl: args.baseUrl,
+      token: args.token,
     },
     {
-      issueKey: args.issueKey,
-      transition: 'accept',
       comment: args.comment,
+      issueKey: args.issueKey,
+      transition: "accept",
     },
-  )
+  );
 
   if (args.json) {
-    process.stdout.write(`${JSON.stringify(result, null, 2)}\n`)
-    return
+    process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
+    return;
   }
 
-  process.stdout.write(`Accepted issue ${result.issueKey} (${result.transition})\n`)
+  process.stdout.write(`Accepted issue ${result.issueKey} (${result.transition})\n`);
 }

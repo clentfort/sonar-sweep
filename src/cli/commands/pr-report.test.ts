@@ -1,95 +1,95 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
-import yargs from 'yargs/yargs'
+import { afterEach, describe, expect, it, vi } from "vitest";
+import yargs from "yargs/yargs";
 
-import { builder, handler } from './pr-report.js'
+import { builder, handler } from "./pr-report.js";
 
 const { getPullRequestReportMock } = vi.hoisted(() => ({
   getPullRequestReportMock: vi.fn(),
-}))
+}));
 
-vi.mock('../../service/pr-report.js', () => ({
+vi.mock("../../service/pr-report.js", () => ({
   getPullRequestReport: getPullRequestReportMock,
-}))
+}));
 
-describe('pr-report command', () => {
+describe("pr-report command", () => {
   afterEach(() => {
-    vi.restoreAllMocks()
-  })
+    vi.restoreAllMocks();
+  });
 
-  it('builds command options', () => {
-    const result = builder(yargs([]))
-    expect(result).toBeDefined()
-  })
+  it("builds command options", () => {
+    const result = builder(yargs([]));
+    expect(result).toBeDefined();
+  });
 
-  it('prints human output by default', async () => {
-    const stdout = vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
+  it("prints human output by default", async () => {
+    const stdout = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
     getPullRequestReportMock.mockResolvedValue({
-      projectKey: 'project',
-      pullRequest: '42',
-      qualityGateStatus: 'OK',
+      analysisUrl: "https://sonar/dashboard?id=project&pullRequest=42",
       failingQualityGateConditions: [],
-      analysisUrl: 'https://sonar/dashboard?id=project&pullRequest=42',
       issueCounts: {
-        newIssues: 1,
         acceptedIssues: 2,
+        newIssues: 1,
       },
       measures: {
-        securityHotspots: 0,
         coverageOnNewCode: 91.234,
         duplicationOnNewCode: 1,
+        securityHotspots: 0,
       },
-    })
+      projectKey: "project",
+      pullRequest: "42",
+      qualityGateStatus: "OK",
+    });
 
     await handler({
-      token: 'token',
-      baseUrl: 'https://sonar',
-      projectKey: 'project',
-      pullRequest: '42',
+      baseUrl: "https://sonar",
       json: false,
-    })
+      projectKey: "project",
+      pullRequest: "42",
+      token: "token",
+    });
 
-    const output = stdout.mock.calls.map((call) => call[0]).join('')
-    expect(output).toContain('Quality Gate passed')
-    expect(output).toContain('- 1 New issues')
-    expect(output).toContain('- 91.2% Coverage on New Code')
-  })
+    const output = stdout.mock.calls.map((call) => call[0]).join("");
+    expect(output).toContain("Quality Gate passed");
+    expect(output).toContain("- 1 New issues");
+    expect(output).toContain("- 91.2% Coverage on New Code");
+  });
 
-  it('prints JSON when requested', async () => {
-    const stdout = vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
+  it("prints JSON when requested", async () => {
+    const stdout = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
     getPullRequestReportMock.mockResolvedValue({
-      projectKey: 'project',
-      pullRequest: '42',
-      qualityGateStatus: 'ERROR',
+      analysisUrl: "https://sonar/dashboard?id=project&pullRequest=42",
       failingQualityGateConditions: [
         {
-          metricKey: 'new_coverage',
-          comparator: 'LT',
-          errorThreshold: '80',
-          actualValue: '75',
+          actualValue: "75",
+          comparator: "LT",
+          errorThreshold: "80",
+          metricKey: "new_coverage",
         },
       ],
-      analysisUrl: 'https://sonar/dashboard?id=project&pullRequest=42',
       issueCounts: {
-        newIssues: 0,
         acceptedIssues: 0,
+        newIssues: 0,
       },
       measures: {
-        securityHotspots: 1,
         coverageOnNewCode: 75,
         duplicationOnNewCode: 0,
+        securityHotspots: 1,
       },
-    })
+      projectKey: "project",
+      pullRequest: "42",
+      qualityGateStatus: "ERROR",
+    });
 
     await handler({
-      token: 'token',
-      baseUrl: 'https://sonar',
-      projectKey: 'project',
-      pullRequest: '42',
+      baseUrl: "https://sonar",
       json: true,
-    })
+      projectKey: "project",
+      pullRequest: "42",
+      token: "token",
+    });
 
-    expect(stdout).toHaveBeenCalledTimes(1)
-    expect(String(stdout.mock.calls[0]?.[0])).toContain('"qualityGateStatus": "ERROR"')
-    expect(String(stdout.mock.calls[0]?.[0])).toContain('"metricKey": "new_coverage"')
-  })
-})
+    expect(stdout).toHaveBeenCalledTimes(1);
+    expect(String(stdout.mock.calls[0]?.[0])).toContain('"qualityGateStatus": "ERROR"');
+    expect(String(stdout.mock.calls[0]?.[0])).toContain('"metricKey": "new_coverage"');
+  });
+});

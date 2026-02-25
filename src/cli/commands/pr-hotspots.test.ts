@@ -1,138 +1,138 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
-import yargs from 'yargs/yargs'
+import { afterEach, describe, expect, it, vi } from "vitest";
+import yargs from "yargs/yargs";
 
-import { builder, handler } from './pr-hotspots.js'
+import { builder, handler } from "./pr-hotspots.js";
 
 const { getPullRequestHotspotsMock } = vi.hoisted(() => ({
   getPullRequestHotspotsMock: vi.fn(),
-}))
+}));
 
-vi.mock('../../service/pr-hotspots.js', () => ({
+vi.mock("../../service/pr-hotspots.js", () => ({
   getPullRequestHotspots: getPullRequestHotspotsMock,
-}))
+}));
 
-vi.mock('../project-key.js', () => ({
-  resolveProjectKey: (key?: string) => key ?? 'auto-detected-project',
-}))
+vi.mock("../project-key.js", () => ({
+  resolveProjectKey: (key?: string) => key ?? "auto-detected-project",
+}));
 
-describe('pr-hotspots command', () => {
+describe("pr-hotspots command", () => {
   afterEach(() => {
-    vi.restoreAllMocks()
-  })
+    vi.restoreAllMocks();
+  });
 
-  it('builds command options', () => {
-    expect(builder(yargs([]))).toBeDefined()
-  })
+  it("builds command options", () => {
+    expect(builder(yargs([]))).toBeDefined();
+  });
 
-  it('prints human-readable output for hotspots', async () => {
-    const stdout = vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
+  it("prints human-readable output for hotspots", async () => {
+    const stdout = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
     getPullRequestHotspotsMock.mockResolvedValue({
-      projectKey: 'my_project',
-      pullRequest: '123',
-      total: 2,
-      page: 1,
-      pageSize: 100,
-      analysisUrl: 'https://sonarcloud.io/project/security_hotspots?id=my_project&pullRequest=123',
+      analysisUrl: "https://sonarcloud.io/project/security_hotspots?id=my_project&pullRequest=123",
       hotspots: [
         {
-          key: 'AZ-1',
-          message: 'Check this input',
-          file: 'src/handler.ts',
+          file: "src/handler.ts",
+          key: "AZ-1",
           line: 42,
-          securityCategory: 'command-injection',
-          vulnerabilityProbability: 'HIGH',
-          status: 'TO_REVIEW',
+          message: "Check this input",
+          securityCategory: "command-injection",
+          status: "TO_REVIEW",
+          vulnerabilityProbability: "HIGH",
         },
         {
-          key: 'AZ-2',
-          message: 'Verify config',
-          file: 'src/config.ts',
+          file: "src/config.ts",
+          key: "AZ-2",
           line: 10,
-          securityCategory: 'others',
-          vulnerabilityProbability: 'LOW',
-          status: 'TO_REVIEW',
+          message: "Verify config",
+          securityCategory: "others",
+          status: "TO_REVIEW",
+          vulnerabilityProbability: "LOW",
         },
       ],
-    })
+      page: 1,
+      pageSize: 100,
+      projectKey: "my_project",
+      pullRequest: "123",
+      total: 2,
+    });
 
     await handler({
-      token: 'token',
-      baseUrl: 'https://sonarcloud.io',
-      pullRequest: '123',
-      status: 'TO_REVIEW',
-      page: 1,
-      pageSize: 100,
+      baseUrl: "https://sonarcloud.io",
       json: false,
-    })
-
-    const output = stdout.mock.calls.map((call) => call[0]).join('')
-    expect(output).toContain('Found 2 unreviewed security hotspot(s)')
-    expect(output).toContain('[HIGH] AZ-1')
-    expect(output).toContain('src/handler.ts:42')
-    expect(output).toContain('[LOW] AZ-2')
-  })
-
-  it('prints JSON output when --json flag is set', async () => {
-    const stdout = vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
-    const mockResult = {
-      projectKey: 'my_project',
-      pullRequest: '123',
-      total: 1,
       page: 1,
       pageSize: 100,
-      analysisUrl: 'https://sonarcloud.io/project/security_hotspots?id=my_project&pullRequest=123',
+      pullRequest: "123",
+      status: "TO_REVIEW",
+      token: "token",
+    });
+
+    const output = stdout.mock.calls.map((call) => call[0]).join("");
+    expect(output).toContain("Found 2 unreviewed security hotspot(s)");
+    expect(output).toContain("[HIGH] AZ-1");
+    expect(output).toContain("src/handler.ts:42");
+    expect(output).toContain("[LOW] AZ-2");
+  });
+
+  it("prints JSON output when --json flag is set", async () => {
+    const stdout = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+    const mockResult = {
+      analysisUrl: "https://sonarcloud.io/project/security_hotspots?id=my_project&pullRequest=123",
       hotspots: [
         {
-          key: 'AZ-1',
-          message: 'Check this',
-          file: 'src/app.ts',
+          file: "src/app.ts",
+          key: "AZ-1",
           line: 5,
-          securityCategory: 'others',
-          vulnerabilityProbability: 'MEDIUM',
-          status: 'TO_REVIEW',
+          message: "Check this",
+          securityCategory: "others",
+          status: "TO_REVIEW",
+          vulnerabilityProbability: "MEDIUM",
         },
       ],
-    }
-    getPullRequestHotspotsMock.mockResolvedValue(mockResult)
-
-    await handler({
-      token: 'token',
-      baseUrl: 'https://sonarcloud.io',
-      pullRequest: '123',
-      status: 'TO_REVIEW',
       page: 1,
       pageSize: 100,
+      projectKey: "my_project",
+      pullRequest: "123",
+      total: 1,
+    };
+    getPullRequestHotspotsMock.mockResolvedValue(mockResult);
+
+    await handler({
+      baseUrl: "https://sonarcloud.io",
       json: true,
-    })
-
-    const output = stdout.mock.calls.map((call) => call[0]).join('')
-    expect(JSON.parse(output)).toEqual(mockResult)
-  })
-
-  it('prints message when no hotspots found', async () => {
-    const stdout = vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
-    getPullRequestHotspotsMock.mockResolvedValue({
-      projectKey: 'my_project',
-      pullRequest: '123',
-      total: 0,
       page: 1,
       pageSize: 100,
-      analysisUrl: 'https://sonarcloud.io/project/security_hotspots?id=my_project&pullRequest=123',
+      pullRequest: "123",
+      status: "TO_REVIEW",
+      token: "token",
+    });
+
+    const output = stdout.mock.calls.map((call) => call[0]).join("");
+    expect(JSON.parse(output)).toEqual(mockResult);
+  });
+
+  it("prints message when no hotspots found", async () => {
+    const stdout = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+    getPullRequestHotspotsMock.mockResolvedValue({
+      analysisUrl: "https://sonarcloud.io/project/security_hotspots?id=my_project&pullRequest=123",
       hotspots: [],
-    })
+      page: 1,
+      pageSize: 100,
+      projectKey: "my_project",
+      pullRequest: "123",
+      total: 0,
+    });
 
     await handler({
-      token: 'token',
-      baseUrl: 'https://sonarcloud.io',
-      pullRequest: '123',
-      status: 'TO_REVIEW',
+      baseUrl: "https://sonarcloud.io",
+      json: false,
       page: 1,
       pageSize: 100,
-      json: false,
-    })
+      pullRequest: "123",
+      status: "TO_REVIEW",
+      token: "token",
+    });
 
-    const output = stdout.mock.calls.map((call) => call[0]).join('')
-    expect(output).toContain('Found 0 unreviewed security hotspot(s)')
-    expect(output).toContain('See analysis details')
-  })
-})
+    const output = stdout.mock.calls.map((call) => call[0]).join("");
+    expect(output).toContain("Found 0 unreviewed security hotspot(s)");
+    expect(output).toContain("See analysis details");
+  });
+});

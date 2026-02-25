@@ -1,39 +1,39 @@
-import { SonarCloudClient, type SonarCloudClientOptions } from './sonarcloud-client.js'
+import { SonarCloudClient, type SonarCloudClientOptions } from "./sonarcloud-client.js";
 
 export type IssueTransitionInput = {
-  issueKey: string
-  transition: 'accept' | 'wontfix' | 'falsepositive' | 'confirm' | 'reopen' | 'resolve'
-  comment?: string
-}
+  comment?: string;
+  issueKey: string;
+  transition: "accept" | "wontfix" | "falsepositive" | "confirm" | "reopen" | "resolve";
+};
 
 export type IssueTransitionResult = {
-  issueKey: string
-  transition: string
-  applied: true
-}
+  applied: true;
+  issueKey: string;
+  transition: string;
+};
 
 export async function transitionIssue(
   clientOptions: SonarCloudClientOptions,
   input: IssueTransitionInput,
 ): Promise<IssueTransitionResult> {
-  const issueKey = input.issueKey.trim()
-  const transition = input.transition.trim()
-  const comment = input.comment?.trim()
+  const issueKey = input.issueKey.trim();
+  const transition = input.transition.trim();
+  const comment = input.comment?.trim();
 
   if (!issueKey) {
-    throw new Error('Missing issueKey')
+    throw new Error("Missing issueKey");
   }
 
   if (!transition) {
-    throw new Error('Missing transition')
+    throw new Error("Missing transition");
   }
 
-  const client = new SonarCloudClient(clientOptions)
-  await client.doIssueTransition(issueKey, transition, comment)
+  const client = new SonarCloudClient(clientOptions);
+  await client.doIssueTransition(issueKey, transition, comment);
 
   return {
+    applied: true,
     issueKey,
     transition,
-    applied: true,
-  }
+  };
 }

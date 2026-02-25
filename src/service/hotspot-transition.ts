@@ -2,51 +2,51 @@ import {
   type HotspotResolution,
   SonarCloudClient,
   type SonarCloudClientOptions,
-} from './sonarcloud-client.js'
+} from "./sonarcloud-client.js";
 
 export type HotspotTransitionInput = {
-  hotspotKey: string
-  resolution: HotspotResolution
-  comment?: string
-}
+  comment?: string;
+  hotspotKey: string;
+  resolution: HotspotResolution;
+};
 
 export type HotspotTransitionResult = {
-  hotspotKey: string
-  status: 'REVIEWED'
-  resolution: HotspotResolution
-  applied: true
-}
+  applied: true;
+  hotspotKey: string;
+  resolution: HotspotResolution;
+  status: "REVIEWED";
+};
 
 export async function reviewHotspot(
   clientOptions: SonarCloudClientOptions,
   input: HotspotTransitionInput,
 ): Promise<HotspotTransitionResult> {
-  const hotspotKey = input.hotspotKey.trim()
-  const resolution = input.resolution
-  const comment = input.comment?.trim()
+  const hotspotKey = input.hotspotKey.trim();
+  const resolution = input.resolution;
+  const comment = input.comment?.trim();
 
   if (!hotspotKey) {
-    throw new Error('Missing hotspotKey')
+    throw new Error("Missing hotspotKey");
   }
 
   if (!resolution) {
-    throw new Error('Missing resolution (SAFE, ACKNOWLEDGED, or FIXED)')
+    throw new Error("Missing resolution (SAFE, ACKNOWLEDGED, or FIXED)");
   }
 
-  const validResolutions: HotspotResolution[] = ['SAFE', 'ACKNOWLEDGED', 'FIXED']
+  const validResolutions: Array<HotspotResolution> = ["SAFE", "ACKNOWLEDGED", "FIXED"];
   if (!validResolutions.includes(resolution)) {
     throw new Error(
-      `Invalid resolution: ${resolution}. Must be one of: ${validResolutions.join(', ')}`,
-    )
+      `Invalid resolution: ${resolution}. Must be one of: ${validResolutions.join(", ")}`,
+    );
   }
 
-  const client = new SonarCloudClient(clientOptions)
-  await client.changeHotspotStatus(hotspotKey, 'REVIEWED', resolution, comment)
+  const client = new SonarCloudClient(clientOptions);
+  await client.changeHotspotStatus(hotspotKey, "REVIEWED", resolution, comment);
 
   return {
-    hotspotKey,
-    status: 'REVIEWED',
-    resolution,
     applied: true,
-  }
+    hotspotKey,
+    resolution,
+    status: "REVIEWED",
+  };
 }
