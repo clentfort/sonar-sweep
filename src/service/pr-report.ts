@@ -98,7 +98,7 @@ function sumCounts(values: Array<IssuesFacetValue> | undefined, keys: Array<stri
 }
 
 function measureValue(
-  measures: Array<{ metric: string; periods?: Array<{ value: string }>; value?: string; }>,
+  measures: Array<{ metric: string; periods?: Array<{ value: string }>; value?: string }>,
   metric: string,
 ): number {
   const measure = measures.find((item) => item.metric === metric);

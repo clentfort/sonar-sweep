@@ -72,7 +72,7 @@ export async function getPullRequestCoverage(
 }
 
 function value(
-  measures: Array<{ metric: string; periods?: Array<{ value: string }>; value?: string; }>,
+  measures: Array<{ metric: string; periods?: Array<{ value: string }>; value?: string }>,
   metric: string,
 ): number {
   const measure = measures.find((item) => item.metric === metric);

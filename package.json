@@ -2,6 +2,16 @@
   "name": "sonar-sweep",
   "version": "0.2.0",
   "description": "CLI for fetching SonarQube Cloud pull request details",
+  "homepage": "https://github.com/clentfort/sonar-sweep#readme",
+  "bugs": {
+    "url": "https://github.com/clentfort/sonar-sweep/issues"
+  },
+  "license": "MIT",
+  "author": "Christian Lentfort",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/clentfort/sonar-sweep.git"
+  },
   "bin": {
     "sonar-sweep": "dist/cli.mjs"
   },
@@ -12,6 +22,10 @@
   "type": "module",
   "main": "dist/index.mjs",
   "types": "dist/index.d.mts",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "scripts": {
     "build": "tsdown src/index.ts src/cli.ts src/cli/index.ts --format esm --dts",
     "test": "vitest run",
@@ -41,9 +55,5 @@
   },
   "engines": {
     "node": ">=20"
-  },
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org/"
   }
 }

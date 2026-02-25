@@ -287,7 +287,9 @@ export class SonarCloudClient {
 
     if (!response.ok) {
       const responseBody = await response.text();
-      throw new Error(`Sonar API request failed (\${response.status}) for \${path}: \${responseBody}`);
+      throw new Error(
+        `Sonar API request failed (\${response.status}) for \${path}: \${responseBody}`,
+      );
     }
   }
 }
