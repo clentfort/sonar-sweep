@@ -206,7 +206,7 @@ export class SonarCloudClient {
     if (!response.ok) {
       const body = await response.text();
       throw new Error(
-        `Sonar API request failed (${response.status}) for /api/sources/raw: \${body}`,
+        `Sonar API request failed (${response.status}) for /api/sources/raw: ${body}`,
       );
     }
 
@@ -266,7 +266,7 @@ export class SonarCloudClient {
 
     if (!response.ok) {
       const body = await response.text();
-      throw new Error(`Sonar API request failed (\${response.status}) for \${path}: \${body}`);
+      throw new Error(`Sonar API request failed (${response.status}) for ${path}: ${body}`);
     }
 
     return (await response.json()) as T;
@@ -279,7 +279,7 @@ export class SonarCloudClient {
     const response = await this.fetchImpl(url, {
       body,
       headers: {
-        Authorization: `Bearer \${this.token}`,
+        Authorization: `Bearer ${this.token}`,
         "content-type": "application/x-www-form-urlencoded",
       },
       method: "POST",
@@ -287,9 +287,7 @@ export class SonarCloudClient {
 
     if (!response.ok) {
       const responseBody = await response.text();
-      throw new Error(
-        `Sonar API request failed (\${response.status}) for \${path}: \${responseBody}`,
-      );
+      throw new Error(`Sonar API request failed (${response.status}) for ${path}: ${responseBody}`);
     }
   }
 }
