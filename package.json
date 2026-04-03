@@ -42,7 +42,7 @@
   },
   "devDependencies": {
     "@nkzw/oxlint-config": "^1.0.1",
-    "@types/node": "22.19.15",
+    "@types/node": "22.19.16",
     "@types/yargs": "17.0.35",
     "@typescript/native-preview": "^7.0.0-dev.20260225.1",
     "husky": "^9.1.7",
